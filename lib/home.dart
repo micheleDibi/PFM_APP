@@ -40,18 +40,140 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: SfCircularChart(
-              // title: const ChartTitle(text: "Balance"),
-              // backgroundColor: Theme.of(context).colorScheme.secondary,
-              series: _getBalancePieSeries(),
-            ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                child: SfCircularChart(
+                  series: _getBalancePieSeries(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: TextButton.icon(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.arrow_forward_ios,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  iconAlignment: IconAlignment.end,
+                  label: Text(
+                    "Ultime transizioni",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 18),
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 18),
+                child: Divider(),
+              ),
+              Column(
+                children: [
+                  ListTile(
+                    title: Text(
+                      "Transizione 1",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary),
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      "Transizione 2",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary),
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      "Transizione 3",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary),
+                    ),
+                  )
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: TextButton.icon(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.arrow_forward_ios,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  iconAlignment: IconAlignment.end,
+                  label: Text(
+                    "Risparmi",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 18),
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 18),
+                child: Divider(),
+              ),
+              Column(
+                children: [
+                  ListTile(
+                    title: Text(
+                      "Risparmio 1",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary),
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      "Risparmio 2",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary),
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      "Risparmio 3",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary),
+                    ),
+                  )
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
+    
+      floatingActionButton: ElevatedButton.icon(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                padding: const EdgeInsets.all(18),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(12),
+                  ),
+                ),
+              ),
+              iconAlignment: IconAlignment.end,
+              label: Text(
+                "Trasferisci",
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
+              icon: Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+
+      
     );
   }
 
@@ -60,16 +182,27 @@ class _HomeScreenState extends State<HomeScreen> {
       DoughnutSeries<Balance, String>(
         pointColorMapper: (datum, index) => datum.color,
         dataSource: [
-          Balance(title: 'Uscite', amount: 420, color: Colors.red),
-          Balance(title: 'Entrate', amount: 1200, color: Colors.green),
+          Balance(
+            title: 'Uscite',
+            amount: 420,
+            color: const Color.fromARGB(255, 238, 78, 78),
+          ),
+          Balance(
+            title: 'Entrate',
+            amount: 1200,
+            color: const Color.fromARGB(255, 161, 221, 112),
+          ),
         ],
         xValueMapper: (datum, index) => datum.title,
         yValueMapper: (datum, index) => datum.amount,
-        dataLabelMapper: (datum, index) => "${datum.title} \n ${datum.amount}€",
+        dataLabelMapper: (datum, index) =>
+            "${datum.title} \n ${datum.amount.toStringAsFixed(2)} €",
         dataLabelSettings: const DataLabelSettings(
           isVisible: true,
           labelPosition: ChartDataLabelPosition.outside,
-          textStyle: TextStyle(color: Colors.white),
+          textStyle: TextStyle(
+            color: Color.fromARGB(255, 245, 243, 245),
+          ),
         ),
       )
     ];
