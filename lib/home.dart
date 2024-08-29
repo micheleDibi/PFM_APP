@@ -1,21 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
-// import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 
-class HomeScreen extends StatefulWidget {
+import 'package:pfm_app/providers/movimento_provider.dart';
+import 'package:pfm_app/widgets/home_table.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() {
+  ConsumerState<HomeScreen> createState() {
     return _HomeScreenState();
   }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  late Future<void> _movimentiFuture;
+
+  List<Widget> _getListTileTransizioni() {
+    int limit = 3, count = 0;
+
+    final List<Widget> listTileTransizioni = [];
+    final elencoMovimenti = ref.watch(movimentoProvider);
+
+    for (var movimento in elencoMovimenti) {
+      String formattedDate = DateFormat("dd/MM/yyyy").format(movimento.date);
+
+      listTileTransizioni.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: ListTile(
+            tileColor: Theme.of(context).colorScheme.onSurfaceVariant,          
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12))
+            ),
+            title: Text(
+              "$formattedDate - ${movimento.title} - ${movimento.amount} €",
+              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 18),
+            ),
+            subtitle: Text(movimento.note, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+          ),
+        ),
+      );
+
+      count++;
+      
+      if(count >= limit) {
+        return listTileTransizioni;
+      }
+    }
+
+    return listTileTransizioni;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _movimentiFuture = ref.read(movimentoProvider.notifier).loadTransaction(1);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final transactionList = ref.watch(movimentoProvider);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onSurface,
       appBar: AppBar(
@@ -46,134 +97,43 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 child: SfCircularChart(
                   series: _getBalancePieSeries(),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: TextButton.icon(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.arrow_forward_ios,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  iconAlignment: IconAlignment.end,
-                  label: Text(
-                    "Ultime transizioni",
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 18),
-                  ),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 18),
-                child: Divider(),
-              ),
-              Column(
-                children: [
-                  ListTile(
-                    title: Text(
-                      "Transizione 1",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      "Transizione 2",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      "Transizione 3",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  )
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: TextButton.icon(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.arrow_forward_ios,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  iconAlignment: IconAlignment.end,
-                  label: Text(
-                    "Risparmi",
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 18),
-                  ),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 18),
-                child: Divider(),
-              ),
-              Column(
-                children: [
-                  ListTile(
-                    title: Text(
-                      "Risparmio 1",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      "Risparmio 2",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      "Risparmio 3",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  )
-                ],
-              ),
+              HomeTable(
+                  title: "Ultime transizioni",
+                  listTiles: _getListTileTransizioni(),)
             ],
           ),
         ),
       ),
-    
       floatingActionButton: ElevatedButton.icon(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding: const EdgeInsets.all(18),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(12),
-                  ),
-                ),
-              ),
-              iconAlignment: IconAlignment.end,
-              label: Text(
-                "Trasferisci",
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-              icon: Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.onPrimary,
+          padding: const EdgeInsets.all(18),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(12),
             ),
-
-      
+          ),
+        ),
+        iconAlignment: IconAlignment.end,
+        label: Text(
+          "Trasferisci",
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
+        ),
+        icon: Icon(
+          Icons.arrow_forward_ios,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
     );
   }
 
