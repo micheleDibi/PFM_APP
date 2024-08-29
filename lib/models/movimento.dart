@@ -10,5 +10,4 @@ class Movimento {
   DateTime date;
   String tipo;
   List<Categoria> categorie;
-
 }
