@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pfm_app/screens/new_movimento.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -34,22 +34,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: ListTile(
-            tileColor: Theme.of(context).colorScheme.onSurfaceVariant,          
+            tileColor: Theme.of(context).colorScheme.onSurfaceVariant,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12))
-            ),
+                borderRadius: BorderRadius.all(Radius.circular(12))),
             title: Text(
               "$formattedDate - ${movimento.title} - ${movimento.amount} €",
-              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 18),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary, fontSize: 18),
             ),
-            subtitle: Text(movimento.note, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+            subtitle: Text(movimento.note,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white70)),
           ),
         ),
       );
 
       count++;
-      
-      if(count >= limit) {
+
+      if (count >= limit) {
         return listTileTransizioni;
       }
     }
@@ -104,14 +106,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               HomeTable(
-                  title: "Ultime transizioni",
-                  listTiles: _getListTileTransizioni(),)
+                title: "Ultime transizioni",
+                listTiles: _getListTileTransizioni(),
+              )
             ],
           ),
         ),
       ),
       floatingActionButton: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            return const NewMovimento();
+          }),);
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.onPrimary,
           padding: const EdgeInsets.all(18),
@@ -145,12 +152,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Balance(
             title: 'Uscite',
             amount: 420,
-            color: const Color.fromARGB(255, 238, 78, 78),
+            color: const Color.fromARGB(255, 237, 8, 0),
           ),
           Balance(
             title: 'Entrate',
             amount: 1200,
-            color: const Color.fromARGB(255, 161, 221, 112),
+            color: const Color.fromARGB(255, 87, 186, 29),
           ),
         ],
         xValueMapper: (datum, index) => datum.title,
