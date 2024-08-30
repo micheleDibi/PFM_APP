@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pfm_app/providers/categoria_provider.dart';
 import 'package:pfm_app/screens/new_movimento.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -19,7 +20,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  late Future<void> _movimentiFuture;
+  late Future<void> _movimentiFuture, _categorieFuture;
 
   List<Widget> _getListTileTransizioni() {
     int limit = 3, count = 0;
@@ -62,12 +63,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _categorieFuture = ref.read(categorieProvider.notifier).loadCategorie();
     _movimentiFuture = ref.read(movimentoProvider.notifier).loadTransaction(1);
   }
 
   @override
   Widget build(BuildContext context) {
     final transactionList = ref.watch(movimentoProvider);
+    final elencoCategorie = ref.watch(categorieProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onSurface,
@@ -116,7 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: ElevatedButton.icon(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-            return const NewMovimento();
+              return NewMovimento(elencoCategorie: elencoCategorie,);
           }),);
         },
         style: ElevatedButton.styleFrom(
