@@ -26,7 +26,7 @@ class _NewMovimentoState extends State<NewMovimento> {
   final Color strongRed = const Color.fromARGB(255, 115, 13, 15);
 
   DateTime? _selectedDate;
-  List<Categoria> _elencoCategorieSelezionate = [];
+  List<Categoria> elencoCategorieSelezionate = [];
 
   void _setIsEntrata() {
     setState(() {
@@ -46,7 +46,13 @@ class _NewMovimentoState extends State<NewMovimento> {
 
   void _aggiungiCategoria(Categoria categoria) {
     setState(() {
-      _elencoCategorieSelezionate.add(categoria);  
+      elencoCategorieSelezionate.add(categoria);  
+    });
+  }
+
+  void _rimuoviCategoria(Categoria categoria) {
+    setState(() {
+      elencoCategorieSelezionate.remove(categoria);
     });
   }
 
@@ -274,11 +280,14 @@ class _NewMovimentoState extends State<NewMovimento> {
               ),
               Expanded(
                 child: ListView.builder(
-                  itemCount: _elencoCategorieSelezionate.length,
+                  itemCount: elencoCategorieSelezionate.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: Text(_elencoCategorieSelezionate[index].descrizione, style: TextStyle(color: Color(int.parse(_elencoCategorieSelezionate[index].macroColore.substring(1), radix: 16),),),),
-                      subtitle: Text(_elencoCategorieSelezionate[index].macroDescrizione),
+                      leading: IconButton(onPressed: () {
+                        _rimuoviCategoria(elencoCategorieSelezionate[index]);
+                      }, icon: const Icon(Icons.remove)),
+                      title: Text(elencoCategorieSelezionate[index].descrizione, style: TextStyle(color: Color(int.parse(elencoCategorieSelezionate[index].macroColore.substring(1), radix: 16),),),),
+                      subtitle: Text(elencoCategorieSelezionate[index].macroDescrizione),
                     );
                 },),
               )
