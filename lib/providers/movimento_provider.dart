@@ -27,7 +27,11 @@ class MovimentoNotifier extends StateNotifier<List<Movimento>> {
           elencoCategorie.add(
             Categoria(
               codice: cat['categoria_codice'],
-              descrizione: cat['categoria_descrizione']
+              descrizione: cat['categoria_descrizione'],
+              macroCodice: cat['categoria_macro_codice'],
+              macroDescrizione: cat['categoria_macro_descrizione'],
+              macroColore: cat['categoria_macro_colore'],
+              macroTipo: cat['categoria_macro_tipo']
             )
           );
         }
