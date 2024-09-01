@@ -26,6 +26,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _caricaFuture();
+  }
+
+  void _caricaFuture() {
     _categorieFuture = ref.read(categorieProvider.notifier).loadCategorie();
     _movimentiFuture = ref.read(movimentoProvider.notifier).loadTransaction(1);
   }
@@ -51,7 +55,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: TextStyle(
                   color: Theme.of(context).colorScheme.onPrimary, fontSize: 18),
             ),
-
             subtitle: Text(movimento.note != null ? movimento.note! : "",
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.white70)),
@@ -68,8 +71,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return listTileTransizioni;
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +90,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 24),
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              margin: const EdgeInsets.all(12),
               child: SfCircularChart(
                 series: _getBalancePieSeries(elencoMovimenti),
               ),
@@ -107,14 +109,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     mainContent = FutureBuilder(
       future: _movimentiFuture,
       builder: (context, snapshot) {
-
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
-        } else if (snapshot.connectionState == ConnectionState.none) {
-          return const Center(
-            child: Text("Errore di caricamento"),
+        } else if (snapshot.hasError == true) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "${snapshot.error}",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _caricaFuture,
+                    icon: Icon(Icons.replay_outlined,
+                        color: Theme.of(context).colorScheme.onPrimary),
+                    label: Text(
+                      "Riprova",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontSize: 18),
+                    ),
+                  )
+                ],
+            ),
           );
         }
 
@@ -123,72 +148,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.onSurface,
+      appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onSurface,
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.onSurface,
-          title: Text(
-            "Personal Finance Management",
-            style: GoogleFonts.lato(
-              color: const Color.fromARGB(255, 245, 243, 245),
+        title: Text(
+          "Personal Finance Management",
+          style: GoogleFonts.lato(
+            color: const Color.fromARGB(255, 245, 243, 245),
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.account_circle,
+                size: 32,
+                color: Color.fromARGB(255, 245, 243, 245),
+              ),
             ),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.account_circle,
-                  size: 32,
-                  color: Color.fromARGB(255, 245, 243, 245),
+        ],
+      ),
+      body: mainContent,
+      floatingActionButton: FutureBuilder(
+        future: _categorieFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container();
+          }
+
+          return ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) {
+                  return NewMovimento(
+                      elencoCategorie: elencoCategorie,
+                      aggiungiMovimento: ref
+                          .read(movimentoProvider.notifier)
+                          .aggiungiMovimento);
+                }),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.onPrimary,
+              padding: const EdgeInsets.all(18),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(12),
                 ),
               ),
             ),
-          ],
-        ),
-        body: mainContent,
-        floatingActionButton: FutureBuilder(
-          future: _categorieFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container();
-            }
-
-            return ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) {
-                      return NewMovimento(
-                        elencoCategorie: elencoCategorie,
-                        aggiungiMovimento: ref.read(movimentoProvider.notifier).aggiungiMovimento
-                      );
-                    }),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                  padding: const EdgeInsets.all(18),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(12),
-                    ),
-                  ),
-                ),
-                iconAlignment: IconAlignment.end,
-                label: Text(
-                  "Trasferisci",
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                ),
-                icon: Icon(
-                  Icons.arrow_forward_ios,
+            iconAlignment: IconAlignment.end,
+            label: Text(
+              "Trasferisci",
+              style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
-                ),
-              );
-          },
-        ));
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+            icon: Icon(
+              Icons.arrow_forward_ios,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   List<DoughnutSeries<Balance, String>> _getBalancePieSeries(
@@ -199,9 +226,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         dataSource: [
           Balance(
             title: 'Uscite',
-            amount: elencoMovimenti.where((element) {
-              return element.tipo == "uscita";
-            },).toList().isEmpty
+            amount: elencoMovimenti
+                    .where(
+                      (element) {
+                        return element.tipo == "uscita";
+                      },
+                    )
+                    .toList()
+                    .isEmpty
                 ? 0
                 : elencoMovimenti
                     .where(
@@ -223,9 +255,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           Balance(
             title: 'Entrate',
-            amount: elencoMovimenti.where((element) {
-              return element.tipo == "entrata";
-            },).toList().isEmpty
+            amount: elencoMovimenti
+                    .where(
+                      (element) {
+                        return element.tipo == "entrata";
+                      },
+                    )
+                    .toList()
+                    .isEmpty
                 ? 0
                 : elencoMovimenti
                     .where(

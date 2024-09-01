@@ -1,18 +1,19 @@
+import 'dart:async';
 import 'dart:convert';
-
-import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:pfm_app/models/categoria.dart';
 import 'package:pfm_app/models/movimento.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 class MovimentoNotifier extends StateNotifier<List<Movimento>> {
-  MovimentoNotifier() : super([]);
+  MovimentoNotifier() : super([]);      
 
   Future<void> loadTransaction(int utenteId) async {
+  try {
     final url =
         Uri.parse("http://192.168.1.199:8000/movimenti/utente/$utenteId");
-    final response = await http.get(url);
+    final response = await http.get(url).timeout(const Duration(seconds: 5));
 
     final List<Movimento> elencoTransizioni = [];
 
@@ -45,10 +46,19 @@ class MovimentoNotifier extends StateNotifier<List<Movimento>> {
               date: DateTime.tryParse(movimento['movimento_data'])!),
         );
       }
-    }
 
-    state = elencoTransizioni;
+      state = elencoTransizioni;
+    } else {
+      throw Exception('Failed to load transactions');
+    }
+  } on TimeoutException catch (_) {
+    throw Exception('Timeout: Server non risponde. Riprova più tardi.');
+  } on SocketException catch (_) {
+    throw Exception('Nessuna connessione a Internet. Verifica la tua rete.');
+  } catch (error) {
+    throw Exception('Errore imprevisto: $error');
   }
+}
 
   void aggiungiMovimento(Movimento movimento) async {
     final url = Uri.parse("http://192.168.1.199:8000/movimento/");
