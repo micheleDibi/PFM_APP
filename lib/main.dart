@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:pfm_app/screens/home.dart';
+import 'package:pfm_app/screens/login.dart';
 
 void main() {
   runApp(
@@ -26,7 +26,7 @@ class App extends StatelessWidget {
         ),
         textTheme: GoogleFonts.openSansTextTheme(),
       ),
-      home: const HomeScreen(),
+      home: Login(),
     );
   }
 }

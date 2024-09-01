@@ -79,8 +79,6 @@ class MovimentoNotifier extends StateNotifier<List<Movimento>> {
           "movimento_updated_by": 1,
         });
 
-    print(body);
-
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -88,7 +86,6 @@ class MovimentoNotifier extends StateNotifier<List<Movimento>> {
     );
 
     if(response.statusCode >= 400) {
-      print('Request failed with status: ${response.statusCode}');
       return;
     }
 
