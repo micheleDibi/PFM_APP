@@ -19,6 +19,7 @@ class CategoriaProvider extends StateNotifier<List<Categoria>> {
       for (var cat in resData) {
         elencoCategorie.add(
           Categoria(
+            id: cat['categoria_id'],
             codice: cat['categoria_codice'],
             descrizione: cat['categoria_descrizione'],
             macroCodice: cat['categoria_macro_codice'],

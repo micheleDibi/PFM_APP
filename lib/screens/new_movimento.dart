@@ -1,14 +1,20 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pfm_app/models/categoria.dart';
+import 'package:pfm_app/models/movimento.dart';
 import 'package:pfm_app/screens/new_movimento_categoria.dart';
 
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 class NewMovimento extends StatefulWidget {
-  const NewMovimento({super.key, required this.elencoCategorie});
+  const NewMovimento(
+      {super.key,
+      required this.elencoCategorie,
+      required this.aggiungiMovimento});
 
   final List<Categoria> elencoCategorie;
+  final void Function(Movimento) aggiungiMovimento;
 
   @override
   State<NewMovimento> createState() {
@@ -18,6 +24,7 @@ class NewMovimento extends StatefulWidget {
 
 class _NewMovimentoState extends State<NewMovimento> {
   bool isEntrata = true;
+  final _formKey = GlobalKey<FormState>();
 
   final Color lightGreen = const Color.fromARGB(255, 87, 186, 29);
   final Color lightRed = const Color.fromARGB(255, 237, 8, 0);
@@ -25,34 +32,15 @@ class _NewMovimentoState extends State<NewMovimento> {
   final Color strongGreen = const Color.fromARGB(255, 47, 116, 28);
   final Color strongRed = const Color.fromARGB(255, 115, 13, 15);
 
+  late String _titolo;
+  String? note;
+  late double _importo;
   DateTime? _selectedDate;
   List<Categoria> elencoCategorieSelezionate = [];
 
   void _setIsEntrata() {
     setState(() {
       isEntrata = !isEntrata;
-    });
-  }
-
-  void _showAggiungiCategoria(List<Categoria> elencoCategorie) async {
-    showModalBottomSheet(
-        useSafeArea: true,
-        isScrollControlled: true,
-        context: context,
-        builder: (ctx) {
-          return AggiungiCategoria(elencoCategorie: elencoCategorie, aggiungiCategoria: _aggiungiCategoria,);
-        });
-  }
-
-  void _aggiungiCategoria(Categoria categoria) {
-    setState(() {
-      elencoCategorieSelezionate.add(categoria);  
-    });
-  }
-
-  void _rimuoviCategoria(Categoria categoria) {
-    setState(() {
-      elencoCategorieSelezionate.remove(categoria);
     });
   }
 
@@ -71,21 +59,112 @@ class _NewMovimentoState extends State<NewMovimento> {
     });
   }
 
+  void _showAggiungiCategoria(List<Categoria> elencoCategorie) async {
+    showModalBottomSheet(
+        useSafeArea: true,
+        isScrollControlled: true,
+        context: context,
+        builder: (ctx) {
+          return AggiungiCategoria(
+            elencoCategorie: elencoCategorie,
+            aggiungiCategoria: _aggiungiCategoria,
+          );
+        });
+  }
+
+  void _aggiungiCategoria(Categoria categoria) {
+    if (elencoCategorieSelezionate.contains(categoria)) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 3),
+        content: Text("Categoria già selezionata"),
+      ));
+    } else {
+      setState(() {
+        elencoCategorieSelezionate.add(categoria);
+      });
+    }
+  }
+
+  void _rimuoviCategoria(Categoria categoria) {
+    setState(() {
+      elencoCategorieSelezionate.remove(categoria);
+    });
+  }
+
+  void _showDialog() {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text("Input non valido"),
+            content: const Text(
+                "Per favore inserire una data, un titolo, l'importo e una o più categorie per il movimento da salvare."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("Ok"),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Input non valido"),
+            content: const Text(
+                "Per favore inserire una data, un titolo, l'importo e una o più categorie per il movimento da salvare."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("Ok"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   void _salvaMovimento() {
-    // TODO - implementare il salvataggio del movimento 
+    if (!_formKey.currentState!.validate() ||
+        _selectedDate == null ||
+        elencoCategorieSelezionate.isEmpty) {
+      _showDialog();
+      return;
+    }
+
+    _formKey.currentState!.save();
+    Navigator.pop(context);
+    widget.aggiungiMovimento(
+      Movimento(
+          title: _titolo,
+          note: note,
+          amount: _importo,
+          date: _selectedDate!,
+          categorie: elencoCategorieSelezionate,
+          tipo: isEntrata ? "entrata" : "uscita"),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final keyController = GlobalKey();
+    // final keyboardSpace = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onSurface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onSurface,
         iconTheme: IconThemeData(
-          color:
-              Theme.of(context).colorScheme.onPrimary, 
+          color: Theme.of(context).colorScheme.onPrimary,
         ),
         title: Text(
           "Nuovo movimento",
@@ -96,9 +175,9 @@ class _NewMovimentoState extends State<NewMovimento> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
         child: Form(
-          key: keyController,
+          key: _formKey,
           child: Column(
             children: [
               Row(
@@ -204,7 +283,14 @@ class _NewMovimentoState extends State<NewMovimento> {
                   fontSize: 18,
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
+                onSaved: (newValue) {
+                  _titolo = newValue!;
+                },
                 validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Inserisci un titolo';
+                  }
+
                   return null;
                 },
               ),
@@ -224,6 +310,9 @@ class _NewMovimentoState extends State<NewMovimento> {
                     "Note",
                   ),
                 ),
+                onSaved: (newValue) {
+                  note = newValue;
+                },
                 style: TextStyle(
                   fontSize: 18,
                   color: Theme.of(context).colorScheme.onPrimary,
@@ -250,6 +339,18 @@ class _NewMovimentoState extends State<NewMovimento> {
                     "Importo",
                   ),
                 ),
+                onSaved: (newValue) {
+                  _importo = double.tryParse(newValue!)!;
+                },
+                validator: (value) {
+                  if (value == null ||
+                      double.tryParse(value) == null ||
+                      double.tryParse(value)! <= 0) {
+                    return 'Inserire un importo corretto.';
+                  }
+
+                  return null;
+                },
                 style: TextStyle(
                   fontSize: 18,
                   color: Theme.of(context).colorScheme.onPrimary,
@@ -267,9 +368,12 @@ class _NewMovimentoState extends State<NewMovimento> {
                 icon: Icon(Icons.add_circle_outlined,
                     color: Theme.of(context).colorScheme.onPrimary),
                 onPressed: () {
-                  _showAggiungiCategoria(widget.elencoCategorie.where((element) {
-                    return element.macroTipo == (isEntrata ? "entrata" : "uscita");
-                  },).toList());
+                  _showAggiungiCategoria(widget.elencoCategorie.where(
+                    (element) {
+                      return element.macroTipo ==
+                          (isEntrata ? "entrata" : "uscita");
+                    },
+                  ).toList());
                 },
                 label: Text(
                   "Aggiungi categoria",
@@ -283,13 +387,29 @@ class _NewMovimentoState extends State<NewMovimento> {
                   itemCount: elencoCategorieSelezionate.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      leading: IconButton(onPressed: () {
-                        _rimuoviCategoria(elencoCategorieSelezionate[index]);
-                      }, icon: const Icon(Icons.remove)),
-                      title: Text(elencoCategorieSelezionate[index].descrizione, style: TextStyle(color: Color(int.parse(elencoCategorieSelezionate[index].macroColore.substring(1), radix: 16),),),),
-                      subtitle: Text(elencoCategorieSelezionate[index].macroDescrizione),
+                      leading: IconButton(
+                          onPressed: () {
+                            _rimuoviCategoria(
+                                elencoCategorieSelezionate[index]);
+                          },
+                          icon: const Icon(Icons.remove)),
+                      title: Text(
+                        elencoCategorieSelezionate[index].descrizione,
+                        style: TextStyle(
+                          color: Color(
+                            int.parse(
+                                elencoCategorieSelezionate[index]
+                                    .macroColore
+                                    .substring(1),
+                                radix: 16),
+                          ),
+                        ),
+                      ),
+                      subtitle: Text(
+                          elencoCategorieSelezionate[index].macroDescrizione),
                     );
-                },),
+                  },
+                ),
               )
             ],
           ),

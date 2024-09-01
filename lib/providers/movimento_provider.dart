@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:pfm_app/models/categoria.dart';
 import 'package:pfm_app/models/movimento.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,16 +25,14 @@ class MovimentoNotifier extends StateNotifier<List<Movimento>> {
         var resDataCategorie = movimento["elenco_categorie"];
 
         for (var cat in resDataCategorie) {
-          elencoCategorie.add(
-            Categoria(
+          elencoCategorie.add(Categoria(
+              id: cat["categoria_id"],
               codice: cat['categoria_codice'],
               descrizione: cat['categoria_descrizione'],
               macroCodice: cat['categoria_macro_codice'],
               macroDescrizione: cat['categoria_macro_descrizione'],
               macroColore: cat['categoria_macro_colore'],
-              macroTipo: cat['categoria_macro_tipo']
-            )
-          );
+              macroTipo: cat['categoria_macro_tipo']));
         }
 
         elencoTransizioni.add(
@@ -41,14 +40,49 @@ class MovimentoNotifier extends StateNotifier<List<Movimento>> {
               title: movimento['movimento_titolo'],
               amount: movimento['movimento_importo'],
               note: movimento['movimento_note'] ?? "",
-              tipo: movimento['movimento_tipo'],  
+              tipo: movimento['movimento_tipo'],
               categorie: elencoCategorie,
               date: DateTime.tryParse(movimento['movimento_data'])!),
         );
       }
     }
-    
+
     state = elencoTransizioni;
+  }
+
+  void aggiungiMovimento(Movimento movimento) async {
+    final url = Uri.parse("http://192.168.1.199:8000/movimento/");
+
+    final body = json.encode( {
+          "movimento_titolo": movimento.title,
+          "movimento_data": movimento.date.toString(),
+          "movimento_importo": movimento.amount,
+          "movimento_note": movimento.note,
+          "movimento_tipo": movimento.tipo,
+          "elenco_categorie": movimento.categorie.map(
+            (e) {
+              return e.id;
+            },
+          ).toList(),
+          "utente_id" : 1,
+          "movimento_created_by": 1,
+          "movimento_updated_by": 1,
+        });
+
+    print(body);
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: body,
+    );
+
+    if(response.statusCode >= 400) {
+      print('Request failed with status: ${response.statusCode}');
+      return;
+    }
+
+    state = [movimento, ...state];
   }
 }
 

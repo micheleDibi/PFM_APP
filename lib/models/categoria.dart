@@ -1,5 +1,6 @@
 class Categoria {
   Categoria({
+    required this.id,
     required this.codice, 
     required this.descrizione,
     required this.macroCodice,
@@ -8,6 +9,7 @@ class Categoria {
     required this.macroTipo
     });
 
+  int id;
   String codice;
   String descrizione;
   String macroCodice;

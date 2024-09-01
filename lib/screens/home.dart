@@ -23,6 +23,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late Future<void> _movimentiFuture, _categorieFuture;
 
+  @override
+  void initState() {
+    super.initState();
+    _categorieFuture = ref.read(categorieProvider.notifier).loadCategorie();
+    _movimentiFuture = ref.read(movimentoProvider.notifier).loadTransaction(1);
+  }
+
   List<Widget> _getListTileTransizioni() {
     int limit = 3, count = 0;
 
@@ -44,7 +51,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: TextStyle(
                   color: Theme.of(context).colorScheme.onPrimary, fontSize: 18),
             ),
-            subtitle: Text(movimento.note,
+
+            subtitle: Text(movimento.note != null ? movimento.note! : "",
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.white70)),
           ),
@@ -61,16 +69,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return listTileTransizioni;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _categorieFuture = ref.read(categorieProvider.notifier).loadCategorie();
-    _movimentiFuture = ref.read(movimentoProvider.notifier).loadTransaction(1);
-  }
+  
 
   @override
   Widget build(BuildContext context) {
-    final transactionList = ref.watch(movimentoProvider);
+    final elencoMovimenti = ref.watch(movimentoProvider);
     final elencoCategorie = ref.watch(categorieProvider);
 
     Widget mainContent = Center(
@@ -89,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: SfCircularChart(
-                series: _getBalancePieSeries(transactionList),
+                series: _getBalancePieSeries(elencoMovimenti),
               ),
             ),
             HomeTable(
@@ -157,6 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     MaterialPageRoute(builder: (context) {
                       return NewMovimento(
                         elencoCategorie: elencoCategorie,
+                        aggiungiMovimento: ref.read(movimentoProvider.notifier).aggiungiMovimento
                       );
                     }),
                   );
@@ -195,7 +199,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         dataSource: [
           Balance(
             title: 'Uscite',
-            amount: elencoMovimenti.isEmpty
+            amount: elencoMovimenti.where((element) {
+              return element.tipo == "uscita";
+            },).toList().isEmpty
                 ? 0
                 : elencoMovimenti
                     .where(
@@ -217,7 +223,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           Balance(
             title: 'Entrate',
-            amount: elencoMovimenti.isEmpty
+            amount: elencoMovimenti.where((element) {
+              return element.tipo == "entrata";
+            },).toList().isEmpty
                 ? 0
                 : elencoMovimenti
                     .where(

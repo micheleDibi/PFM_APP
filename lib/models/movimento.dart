@@ -6,7 +6,7 @@ class Movimento {
 
   String title;
   double amount;
-  String note;
+  String? note;
   DateTime date;
   String tipo;
   List<Categoria> categorie;
