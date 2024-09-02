@@ -12,21 +12,32 @@ class Login extends ConsumerWidget {
   late String _email;
   late String _password;
 
-  void _login(BuildContext context, WidgetRef ref) async {
+  void _login(BuildContext context, WidgetRef ref) {
     if (_keyForm.currentState!.validate()) {
       _keyForm.currentState!.save();
 
-      ref.read(utenteProvider.notifier).loadUtente(_email, _password);
+      Future<void> utenteFuture =
+          ref.read(utenteProvider.notifier).loadUtente(_email, _password);
 
-      Utente utente = ref.watch(utenteProvider);
+      utenteFuture.then(
+        (value) {
+          Utente utente = ref.watch(utenteProvider);
 
-      if(utente.id != 0) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-          return const HomeScreen();
-        },));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Utente non trovato'),),);
-      }
+          if (utente.id != 0) {
+            Navigator.pushReplacement(context, MaterialPageRoute(
+              builder: (context) {
+                return const HomeScreen();
+              },
+            ));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Utente non trovato'),
+              ),
+            );
+          }
+        },
+      );
     }
   }
 
