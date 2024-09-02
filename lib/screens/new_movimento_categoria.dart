@@ -16,12 +16,41 @@ class AggiungiCategoria extends StatefulWidget {
   }
 }
 
+class BottoneCategoria extends StatelessWidget {
+  const BottoneCategoria(
+      {super.key, required this.categoria, required this.aggiungiCategoria});
+
+  final Categoria categoria;
+  final void Function(Categoria categoria) aggiungiCategoria;
+
+  @override
+  Widget build(BuildContext context) {
+    Color color =
+        Color(int.parse(categoria.macroColore.substring(1), radix: 16));
+
+    return Container(
+      margin: const EdgeInsets.all(2),
+      child: OutlinedButton.icon(
+        onPressed: () {
+          aggiungiCategoria(categoria);
+          Navigator.pop(context);
+        },
+        icon: Icon(Icons.add, color: color),
+        label: Text(
+          categoria.descrizione,
+          style: TextStyle(color: color, fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
 class _AggiungiCategoriaState extends State<AggiungiCategoria> {
   final _searchBarController = TextEditingController();
 
   late List<Categoria> elencoCategorie;
-  List<Container> elencoButtoniCategorie = [];
-  late List<Categoria> filteredElencoCategorie;
+  List<BottoneCategoria> elencoButtoniCategorie = [];
+  List<BottoneCategoria> elencoBottoniCategorieFiltrate = [];
 
   @override
   void initState() {
@@ -29,39 +58,25 @@ class _AggiungiCategoriaState extends State<AggiungiCategoria> {
 
     elencoCategorie = widget.elencoCategorie;
 
-    _filterList("");
+    _initializeCustomButtons();
   }
 
-  void _createCustomButtons() {
+  void _initializeCustomButtons() {
     elencoButtoniCategorie.clear();
 
-    for (Categoria categoria in filteredElencoCategorie) {
-      Color color =
-          Color(int.parse(categoria.macroColore.substring(1), radix: 16));
-
-      elencoButtoniCategorie.add(
-        Container(
-          margin: const EdgeInsets.all(2),
-          child: OutlinedButton.icon(
-            onPressed: () {
-              widget.aggiungiCategoria(categoria);
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.add, color: color),
-            label: Text(
-              categoria.descrizione,
-              style: TextStyle(color: color, fontSize: 16),
-            ),
-          ),
-        ),
-      );
+    for (Categoria categoria in elencoCategorie) {
+      elencoButtoniCategorie.add(BottoneCategoria(
+          categoria: categoria, aggiungiCategoria: widget.aggiungiCategoria));
     }
+
+    elencoButtoniCategorie.shuffle();
+    elencoBottoniCategorieFiltrate = elencoButtoniCategorie;
   }
 
   void _filterList(String textFilter) {
     setState(() {
-      filteredElencoCategorie = elencoCategorie
-          .where((categoria) => categoria.descrizione
+      elencoBottoniCategorieFiltrate = elencoButtoniCategorie
+          .where((bottone) => bottone.categoria.descrizione
               .toLowerCase()
               .contains(textFilter.toLowerCase()))
           .toList();
@@ -76,10 +91,6 @@ class _AggiungiCategoriaState extends State<AggiungiCategoria> {
 
   @override
   Widget build(BuildContext context) {
-    _createCustomButtons();
-
-    elencoButtoniCategorie.shuffle();
-
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onSurface,
       appBar: AppBar(
@@ -102,7 +113,9 @@ class _AggiungiCategoriaState extends State<AggiungiCategoria> {
           decoration: InputDecoration(
             prefix: IconButton(
               onPressed: () {
-                _filterList(_searchBarController.text);
+                if (_searchBarController.text.isNotEmpty) {
+                  _filterList(_searchBarController.text);
+                }
               },
               icon: Icon(
                 Icons.search,
@@ -125,7 +138,7 @@ class _AggiungiCategoriaState extends State<AggiungiCategoria> {
           ),
         ),
       ),
-      body: elencoButtoniCategorie.isEmpty
+      body: elencoBottoniCategorieFiltrate.isEmpty
           ? Center(
               child: Text(
                 "Non sono presenti categorie da selezionare",
@@ -134,13 +147,13 @@ class _AggiungiCategoriaState extends State<AggiungiCategoria> {
               ),
             )
           : Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Wrap(
-                children: elencoButtoniCategorie.length > 10
-                    ? elencoButtoniCategorie.getRange(0, 10).toList()
-                    : elencoButtoniCategorie,
+              padding: const EdgeInsets.all(8.0),
+              child: Wrap(
+                children: elencoBottoniCategorieFiltrate.length > 10
+                    ? elencoBottoniCategorieFiltrate.getRange(0, 10).toList()
+                    : elencoBottoniCategorieFiltrate,
               ),
-          ),
+            ),
     );
   }
 }
