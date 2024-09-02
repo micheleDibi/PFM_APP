@@ -24,7 +24,11 @@ class App extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 37, 39, 40),
         ),
-        textTheme: GoogleFonts.openSansTextTheme(),
+        textTheme: GoogleFonts.openSansTextTheme().copyWith(
+          // bodyLarge: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+          bodyMedium: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+          // bodySmall: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+        ),
       ),
       home: Login(),
     );

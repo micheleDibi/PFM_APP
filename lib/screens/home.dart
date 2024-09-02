@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pfm_app/screens/profilo.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -49,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: ListTile(
             tileColor: Theme.of(context).colorScheme.onSurfaceVariant,
             shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12))),
+                borderRadius: BorderRadius.all(Radius.circular(12),),),
             title: Text(
               "$formattedDate - ${movimento.title} - ${movimento.amount} €",
               style: TextStyle(
@@ -117,28 +118,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "${snapshot.error}",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "${snapshot.error}",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
-                  OutlinedButton.icon(
-                    onPressed: _caricaFuture,
-                    icon: Icon(Icons.replay_outlined,
-                        color: Theme.of(context).colorScheme.onPrimary),
-                    label: Text(
-                      "Riprova",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          fontSize: 18),
-                    ),
-                  )
-                ],
+                ),
+                OutlinedButton.icon(
+                  onPressed: _caricaFuture,
+                  icon: Icon(Icons.replay_outlined,
+                      color: Theme.of(context).colorScheme.onPrimary),
+                  label: Text(
+                    "Riprova",
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 18),
+                  ),
+                )
+              ],
             ),
           );
         }
@@ -161,7 +162,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const ProfiloScreen();
+                    },
+                  ),
+                );
+              },
               icon: const Icon(
                 Icons.account_circle,
                 size: 32,
